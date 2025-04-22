@@ -1,0 +1,9 @@
+[package]
+name = "lib"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_jsonc2 = "0.1.2"
+serde_yaml = "0.9.34"
+serde = { version = "1.0.218", features = ["derive"] }
