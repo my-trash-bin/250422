@@ -35,12 +35,11 @@ Define types in a YAML file like this:
 
 ```yaml
 types:
-
   Shape:
     type: union
     variants:
-      - Circle
-      - Square
+      Circle: true
+      Square: true
 
   Circle:
     type: struct
@@ -51,6 +50,8 @@ types:
     type: struct
     fields:
       size: float
+
+root: Shape
 ```
 
 ---
@@ -107,18 +108,42 @@ struct Shape {
 
 ```json
 {
-  "Shape": {
-    "oneOf": [
-      { "required": ["type"], "properties": { "type": { "const": "Circle" } } },
-      { "required": ["type"], "properties": { "type": { "const": "Square" } } }
-    ]
-  },
-  "Circle": {
-    "type": "object",
-    "properties": {
-      "radius": { "type": "number" }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/definitions/Shape",
+  "definitions": {
+    "Shape": {
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "allOf": [
+            { "required": ["type"], "properties": { "type": { "const": "Circle" } } },
+            { "$ref": "#/definitions/Circle" }
+          ]
+        },
+        {
+          "allOf": [
+            { "required": ["type"], "properties": { "type": { "const": "Square" } } },
+            { "$ref": "#/definitions/Square" }
+          ]
+        }
+      ]
     },
-    "required": ["radius"]
+    "Circle": {
+      "type": "object",
+      "properties": {
+        "radius": { "type": "number" }
+      },
+      "unevaluatedProperties": false,
+      "required": ["radius"]
+    },
+    "Square": {
+      "type": "object",
+      "properties": {
+        "size": { "type": "number" }
+      },
+      "unevaluatedProperties": false,
+      "required": ["radius"]
+    }
   }
 }
 ```

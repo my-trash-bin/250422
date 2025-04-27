@@ -9,10 +9,10 @@ use clap::Parser;
 struct Args {
     input: String,
     output: String,
-    #[arg(short, long, default_value_t = true)]
-    c: bool,
-    #[arg(short = 'p', long, default_value_t = true)]
-    cpp: bool,
+    #[arg(short = 'c', long, default_value_t = false)]
+    skip_c: bool,
+    #[arg(short = 'p', long, default_value_t = false)]
+    skip_cpp: bool,
     #[arg(short, long, default_value_t = true)]
     json_schema: bool,
 }
@@ -22,8 +22,8 @@ fn main() {
     lib::main(
         &args.input,
         &args.output,
-        args.c,
-        args.cpp,
+        !args.skip_c,
+        !args.skip_cpp,
         args.json_schema,
     );
 }

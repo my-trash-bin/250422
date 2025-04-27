@@ -1,14 +1,16 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DSL {
-    pub types: Vec<Type>,
+    pub types: HashMap<String, Type>,
+    pub root: String,
 }
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum Type {
+    Array(Array),
     Struct(Struct),
     Union(Union),
     Enum(Enum),
@@ -16,31 +18,27 @@ pub enum Type {
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Struct {
-    pub name: String,
-    pub fields: Vec<Field>,
-}
-
-#[derive(Debug, serde::Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Field {
-    pub name: String,
+pub struct Array {
     #[serde(rename = "type")]
     pub ty: String,
 }
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Struct {
+    pub fields: HashMap<String, String>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Union {
-    pub name: String,
-    pub variants: Vec<String>,
+    pub variants: HashMap<String, String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Enum {
-    pub name: String,
-    pub variants: Vec<String>,
+    pub variants: HashMap<String, bool>,
 }
 
 pub fn main(from: &str, to: &str, c: bool, cpp: bool, json_schema: bool) {
@@ -93,67 +91,61 @@ pub fn validate(dsl: &DSL) {
         }
     }
 
-    fn validate_field(dsl: &DSL, field: &Field) {
-        validate_type_name(&field.name);
-        validate_name(&field.ty);
-        if !is_builtin_type(&field.ty)
-            && !dsl.types.iter().any(|ty| match ty {
-                Type::Struct(s) => s.name == field.ty,
-                Type::Union(u) => u.name == field.ty,
-                Type::Enum(e) => e.name == field.ty,
-            })
-        {
-            panic!("Unknown type: {}", field.ty);
+    fn validate_field(dsl: &DSL, name: &str, field: &str) {
+        validate_type_name(name);
+        validate_name(field);
+        if !is_builtin_type(field) && !dsl.contains_key(field) {
+            panic!("Unknown type: {}", field);
         }
     }
 
-    fn validate_type(dsl: &DSL, ty: &Type) {
+    fn validate_type(dsl: &DSL, name: &str, ty: &Type) {
         match ty {
+            Type::Array(a) => {
+                validate_type_name(name);
+                validate_name(&a.ty);
+                if !is_builtin_type(&a.ty) && !dsl.contains_key(&a.ty) {
+                    panic!("Unknown type: {}", a.ty);
+                }
+            }
             Type::Struct(s) => {
-                validate_type_name(&s.name);
-                s.fields.iter().for_each(|f| validate_field(dsl, f));
+                validate_type_name(name);
+                s.fields
+                    .iter()
+                    .for_each(|(name, field)| validate_field(dsl, name, field));
             }
             Type::Union(u) => {
-                validate_type_name(&u.name);
-                u.variants.iter().for_each(|n| {
-                    validate_name(n);
-                    if !is_builtin_type(n)
-                        && !dsl.types.iter().any(|ty| match ty {
-                            Type::Struct(s) => s.name == *n,
-                            Type::Union(u) => u.name == *n,
-                            Type::Enum(e) => e.name == *n,
-                        })
-                    {
-                        panic!("Unknown type: {}", n);
+                validate_type_name(name);
+                u.variants.iter().for_each(|(name, variant)| {
+                    validate_name(name);
+                    validate_name(variant);
+                    if !is_builtin_type(variant) && !dsl.contains_key(variant) {
+                        panic!("Unknown type: {}", variant);
                     }
                 });
             }
             Type::Enum(e) => {
-                validate_type_name(&e.name);
-                e.variants.iter().for_each(|n| validate_type_name(n));
+                validate_type_name(name);
+                e.variants
+                    .iter()
+                    .for_each(|(name, _)| validate_type_name(name));
             }
         }
     }
 
-    if dsl
-        .types
-        .iter()
-        .map(|ty| match ty {
-            Type::Struct(s) => s.name.to_string(),
-            Type::Union(u) => u.name.to_string(),
-            Type::Enum(e) => e.name.to_string(),
-        })
-        .collect::<HashSet<_>>()
-        .len()
-        != dsl.types.len()
-    {
-        panic!("Duplicate type name");
-    }
-    dsl.types.iter().for_each(|ty| validate_type(dsl, ty));
+    dsl.iter()
+        .for_each(|(name, ty)| validate_type(dsl, name, ty));
 }
 
 pub fn generate_code(dsl: &DSL, to: &str, c: bool, cpp: bool, json_schema: bool) {
     validate(dsl);
+
+    std::fs::create_dir_all(to).unwrap();
+
+    if c || cpp {
+        let template = std::fs::read_to_string("template.txt").unwrap();
+        std::fs::write(format!("{}/jsonc.include.h", to), template).unwrap();
+    }
 
     // TODO: generate code
 }

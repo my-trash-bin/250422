@@ -2,6 +2,19 @@
   "files.associations": {
     "*.json": "jsonc"
   },
+  "json.schemas": [
+    {
+      "fileMatch": ["samples/*/*.json"],
+      "url": "./schema.json"
+    },
+    {
+      "fileMatch": ["**/schema.json"],
+      "url": "https://json-schema.org/draft/2020-12/schema"
+    }
+  ],
+  "yaml.schemas": {
+    "./schema.json": "/samples/*/*.yaml"
+  },
   "[rust]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
