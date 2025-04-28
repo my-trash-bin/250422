@@ -1,0 +1,6 @@
+eol = lf
+
+jsonc.include.h linguist-generated
+types.h linguist-generated
+parse.c linguist-generated
+parse.cpp linguist-generated

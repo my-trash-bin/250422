@@ -1,17 +1,16 @@
-Shape:
-  type: union
-  variants:
-    Circle: Circle
-    Square: Square
-Circle:
-  type: struct
-  fields:
-    radius: float
-Square:
-  type: struct
-  fields:
-    size: float
-ShapeType:
-  type: enum
-  variants:
-    test: true
+types:
+  Shape:
+    type: union
+    variants:
+      Circle: Circle
+      Square: Square
+  Circle:
+    type: struct
+    fields:
+      radius: float
+  Square:
+    type: struct
+    fields:
+      size: float
+
+root: Shape

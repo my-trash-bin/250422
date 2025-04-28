@@ -28,5 +28,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "rust-analyzer.checkOnSave": true,
-  "rust-analyzer.check.command": "clippy"
+  "rust-analyzer.check.command": "clippy",
+  "C_Cpp.intelliSenseEngine": "disabled"
 }
