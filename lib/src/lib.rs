@@ -94,7 +94,7 @@ pub fn validate(dsl: &DSL) {
     fn validate_field(dsl: &DSL, name: &str, field: &str) {
         validate_type_name(name);
         validate_name(field);
-        if !is_builtin_type(field) && !dsl.contains_key(field) {
+        if !is_builtin_type(field) && !dsl.types.contains_key(field) {
             panic!("Unknown type: {}", field);
         }
     }
@@ -104,7 +104,7 @@ pub fn validate(dsl: &DSL) {
             Type::Array(a) => {
                 validate_type_name(name);
                 validate_name(&a.ty);
-                if !is_builtin_type(&a.ty) && !dsl.contains_key(&a.ty) {
+                if !is_builtin_type(&a.ty) && !dsl.types.contains_key(&a.ty) {
                     panic!("Unknown type: {}", a.ty);
                 }
             }
@@ -119,7 +119,7 @@ pub fn validate(dsl: &DSL) {
                 u.variants.iter().for_each(|(name, variant)| {
                     validate_name(name);
                     validate_name(variant);
-                    if !is_builtin_type(variant) && !dsl.contains_key(variant) {
+                    if !is_builtin_type(variant) && !dsl.types.contains_key(variant) {
                         panic!("Unknown type: {}", variant);
                     }
                 });
@@ -133,7 +133,11 @@ pub fn validate(dsl: &DSL) {
         }
     }
 
-    dsl.iter()
+    if !dsl.types.contains_key(&dsl.root) {
+        panic!("Root type is not defined: {}", dsl.root);
+    }
+    dsl.types
+        .iter()
         .for_each(|(name, ty)| validate_type(dsl, name, ty));
 }
 

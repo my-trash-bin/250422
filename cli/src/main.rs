@@ -13,8 +13,8 @@ struct Args {
     skip_c: bool,
     #[arg(short = 'p', long, default_value_t = false)]
     skip_cpp: bool,
-    #[arg(short, long, default_value_t = true)]
-    json_schema: bool,
+    #[arg(short = 'j', long, default_value_t = false)]
+    skip_json_schema: bool,
 }
 
 fn main() {
@@ -24,6 +24,6 @@ fn main() {
         &args.output,
         !args.skip_c,
         !args.skip_cpp,
-        args.json_schema,
+        !args.skip_json_schema,
     );
 }

@@ -3,60 +3,67 @@
   "title": "DSL",
   "description": "A DSL for describing data types",
   "type": "object",
-  "unevaluatedProperties": false,
-  "additionalProperties": {
-    "oneOf": [
-      {
-        "type": "object",
-        "properties": {
-          "type": { "type": "string", "enum": ["array"] },
-          "items": { "type": "string" }
-        },
-        "required": ["type", "items"],
-        "unevaluatedProperties": false
-      },
-      {
-        "type": "object",
-        "properties": {
-          "type": { "type": "string", "enum": ["struct"] },
-          "fields": {
+  "properties": {
+    "types": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
             "type": "object",
-            "additionalProperties": { "type": "string" },
-            "minProperties": 1,
+            "properties": {
+              "type": { "type": "string", "enum": ["array"] },
+              "items": { "type": "string" }
+            },
+            "required": ["type", "items"],
+            "unevaluatedProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["struct"] },
+              "fields": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "minProperties": 1,
+                "unevaluatedProperties": false
+              }
+            },
+            "required": ["type", "fields"],
+            "unevaluatedProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["union"] },
+              "variants": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "minProperties": 1,
+                "unevaluatedProperties": false
+              }
+            },
+            "required": ["type", "variants"],
+            "unevaluatedProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["enum"] },
+              "variants": {
+                "type": "object",
+                "additionalProperties": { "type": "boolean", "enum": [true] },
+                "minProperties": 1,
+                "unevaluatedProperties": false
+              }
+            },
+            "required": ["type", "variants"],
             "unevaluatedProperties": false
           }
-        },
-        "required": ["type", "fields"],
-        "unevaluatedProperties": false
-      },
-      {
-        "type": "object",
-        "properties": {
-          "type": { "type": "string", "enum": ["union"] },
-          "variants": {
-            "type": "object",
-            "additionalProperties": { "type": "string" },
-            "minProperties": 1,
-            "unevaluatedProperties": false
-          }
-        },
-        "required": ["type", "variants"],
-        "unevaluatedProperties": false
-      },
-      {
-        "type": "object",
-        "properties": {
-          "type": { "type": "string", "enum": ["enum"] },
-          "variants": {
-            "type": "object",
-            "additionalProperties": { "type": "boolean", "enum": [true] },
-            "minProperties": 1,
-            "unevaluatedProperties": false
-          }
-        },
-        "required": ["type", "variants"],
-        "unevaluatedProperties": false
+        ]
       }
-    ]
-  }
+    },
+    "root": { "type": "string" }
+  },
+  "required": ["types", "root"],
+  "unevaluatedProperties": false
 }
